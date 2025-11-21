@@ -1,28 +1,24 @@
 version: "3.8"
 
 services:
-  # 1. Servicio de Métricas (Prometheus)
   prometheus:
     image: prom/prometheus
     container_name: prometheus
     volumes:
-      # Asegúrate de que tus archivos .yml estén en la carpeta 'devops_config'
       - ./devops_config/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
-      - "9090:9090" # Puerto estándar de Prometheus [cite: 26]
+      - "9090:9090" 
     restart: always
     networks:
-      - devops # Red interna [cite: 33]
+      - devops 
 
-  # 2. Servicio de Logs (Loki)
   loki:
     image: grafana/loki:2.8.2
     container_name: loki
     ports:
-      - "3100:3100" # Puerto estándar de Loki [cite: 27]
+      - "3100:3100" 
     volumes:
-      # Corregido para apuntar al archivo específico, no solo a la carpeta
       - ./devops_config/loki-config.yml:/etc/loki/local-config.yaml:ro
       - ./loki_data:/loki
       - ./wal_data:/wal
@@ -30,13 +26,11 @@ services:
     networks:
       - devops
 
-  # 3. Servicio de Recolección de Logs (Promtail)
   promtail:
     image: grafana/promtail:2.8.2
     container_name: promtail
     volumes:
       - ./devops_config/promtail-config.yml:/etc/promtail/config.yml:ro
-      # VOLUMEN CLAVE: Aquí Promtail lee los logs que escribe la App 
       - ./logs:/usr/src/app/logs
     command: -config.file=/etc/promtail/config.yml
     depends_on:
@@ -44,7 +38,6 @@ services:
     networks:
       - devops
 
-  # 4. Visualización (Grafana)
   grafana:
     image: grafana/grafana:9.5.0
     container_name: grafana
@@ -59,22 +52,18 @@ services:
     networks:
       - devops
 
-  # 5. Aplicación Node.js (Back)
   back:
-    # Usamos la imagen que definimos en el workflow de GitHub Actions 
     image: colmay2005/fullstack-back:latest 
     container_name: back
     ports:
       - "3001:3001"
     volumes:
-      # VOLUMEN CLAVE: La app escribe aquí, Promtail lee de aquí
       - ./logs:/usr/src/app/logs
     environment:
-      - PORT=3001 # Forzamos el puerto para que coincida con prometheus.yml
+      - PORT=3001 
     networks:
       - devops
 
-# Configuración de Red Interna [cite: 33]
 networks:
   devops:
     driver: bridge

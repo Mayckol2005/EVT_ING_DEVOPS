@@ -1,32 +1,37 @@
-name: Build, Push Docker and Deploy to EC2
+name: CI/CD Docker Build & Push
 
+# 1.1. Disparadores: Se ejecuta al hacer push a la rama main
 on:
   push:
     branches: [ "main" ]
 
 env:
-  DOCKERHUB_USERNAME: jocamposar #usuario DockerHub
-  DOCKERHUB_REPO:   full_stack2_back     #repo DockerHub
+  # Configuración de variables de entorno con tus datos
+  DOCKER_REPO: fullstack-back 
+  DOCKER_USERNAME: colmay2005
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ Obtener código
+    # 1. Obtener código del repositorio
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    # 2️⃣ Loguear en Docker Hub
+    # 2. Loguear en Docker Hub (Requisito 1.3)
+    # Usa los secrets que configuraste en el paso anterior
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-
-    # 3️⃣ Construir y subir imagen Docker
+    # 3. Construir y subir imagen Docker (Requisito 1.2 y 1.3)
+    # Genera el tag: colmay2005/fullstack-back:latest
     - name: Build and push Docker image
-      run: |
-        docker build -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:latest .
-        docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:latest
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest

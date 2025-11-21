@@ -7,8 +7,8 @@ on:
 
 env:
   # Configuración de variables de entorno con tus datos
-  DOCKER_REPO: fullstack-back 
-  DOCKER_USERNAME: colmay2005
+  DOCKERHUB_USERNAME: colmay2005
+  DOCKERHUB_REPO: fullstack-back 
 
 jobs:
   build-and-push:
